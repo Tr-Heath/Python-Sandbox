@@ -1,0 +1,30 @@
+# === Secrets — MUST stay out of a public repo ===
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+id_*
+
+# == noise
+ghostty.terminfo
+test-results
+
+# Your course repo is its own git clone; don't nest it here
+work/
+
+# tmux plugin manager clones itself in here at setup
+dotfiles/tmux/plugins/
+
+# Python / editor cruft
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+.idea/
+.vscode/
+
+# Safe to commit: Dockerfile, compose.yaml, .env.example, .gitignore,
+# .dockerignore, dotfiles/nvim/init.lua, dotfiles/tmux/tmux.conf, README.md

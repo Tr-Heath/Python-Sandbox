@@ -1,0 +1,35 @@
+services:
+  pydev:
+    build:
+      context: .
+      args:
+        # Match to your HOST user on Linux (`id -u` / `id -g`). On macOS the
+        # values don't matter — the VM remaps ownership.
+        UID: "1000"
+        GID: "1000"
+        NVIM_VERSION: "0.12.3"
+    image: pydev-sandbox
+    container_name: pydev-sandbox
+    working_dir: /home/dev/work
+    stdin_open: true          # keeps the container alive under `up -d`
+    tty: true                 # ...so a tmux server can persist inside it
+    env_file:
+      - .env                  # `cp .env.example .env` first (Foundry vars)
+    volumes:
+      - ./work:/home/dev/work
+      - ./dotfiles/nvim:/home/dev/.config/nvim
+      - ./dotfiles/tmux:/home/dev/.config/tmux
+      - ~/.ssh/id_personal_github:/home/dev/.ssh/id_personal:ro
+      - ~/.gitconfig-personal:/home/dev/.gitconfig:ro
+      # persisted state (survives rebuilds):
+      - uv-cache:/home/dev/.cache/uv         # uv downloads + wheel cache
+      - local-share:/home/dev/.local/share   # nvim plugins, Mason LSPs, tmux resurrect
+      - local-state:/home/dev/.local/state   # nvim undo history, shada
+      - az-config:/home/dev/.azure           # az login tokens + CLI extensions
+    command: bash
+
+volumes:
+  uv-cache:
+  local-share:
+  local-state:
+  az-config:

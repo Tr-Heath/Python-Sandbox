@@ -1,0 +1,22 @@
+# === Secrets & local overrides ===
+.env
+.env.*
+!.env.example
+
+# === Repo & project directories that don't belong in the build context ===
+.git/
+work/
+
+# === Python artifacts ===
+.venv/
+__pycache__/
+*.py[cod]
+
+# === Editor / OS cruft ===
+.DS_Store
+.idea/
+.vscode/
+
+# ghostty.terminfo is intentionally NOT excluded — the Dockerfile optionally
+# COPYs it via a bracket-glob (ghostty.terminf[o]). Excluding it here would
+# silently prevent it from being compiled into the image.
