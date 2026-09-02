@@ -1,20 +1,18 @@
 # Python Dev Sandbox (uv + tmux + Neovim + Azure Foundry)
 
 An interactive, CLI-only Linux container for personal Python
-learning/experimentation, with all editing done in Neovim. Your code, dotfiles,
+learning/experimentation, with all editing done in Neovim. All code, dotfiles,
 and credentials live on the **host** and are mounted in at runtime, so the image
-carries nothing project-specific and you can rebuild or delete it freely.
+carries nothing project-specific and to enable rebuilding or deletion.
 
-Optimized for **low friction and "just works"**, not hardening — this isn't
-deployed anywhere. It builds **natively on both Apple Silicon (arm64) and x86
-Linux (amd64)**, so it's fast on all your machines.
+Optimized for **low friction and "just works"**, not hardening and not intended for production use. It builds **natively on both Apple Silicon (arm64) and x86
+Linux (amd64)**.
 
-- **Base:** `debian:trixie-slim` — glibc, so prebuilt wheels install without
-  compiling. The low-friction default; Alpine's musl would fight you here.
-- **Python + packages:** `uv`, managed CPython 3.13 baked in.
+- **Base:** `debian:trixie-slim` — glibc
+- **Python + packages:** `uv`, include managed CPython 3.13 
 - **Editor:** Neovim 0.12.x (official build) + Treesitter/LSP tooling.
 - **Multiplexer:** tmux, with persistence plugins + cross-device notes.
-- **Cloud:** Azure CLI baked in; headless auth for Azure AI Foundry.
+- **Cloud:** Azure CLI; headless auth for Azure AI Foundry.
 - **Git:** isolated **personal** GitHub identity + a dedicated SSH key.
 
 Host layout:
@@ -24,8 +22,8 @@ Host layout:
 ├── Dockerfile
 ├── compose.yaml
 ├── .env                    # `cp .env.example .env` (Foundry vars; gitignored)
-├── ghostty.terminfo        # optional; you generate this (§3)
-├── work/                   # your course repo (its own git clone)
+├── ghostty.terminfo        
+├── work/                   # learning/dev project, will be its own repo
 └── dotfiles/{nvim/init.lua, tmux/tmux.conf}
 ```
 
@@ -138,7 +136,7 @@ persist on the host automatically.
 
 ## 6. Azure AI Foundry
 
-The Azure CLI is baked in, and auth is designed to work **headless** (no browser
+The Azure CLI included, and auth is designed to work **headless** (no browser
 in the container).
 
 **Log in once** (persists in the `az-config` volume across rebuilds):
@@ -280,22 +278,11 @@ SSH private key and `~/.gitconfig-personal` aren't in the repo at all — they'r
 host-side mounts.
 
 Because secrets sit outside the repo, cloning it onto a new machine does **not**
-bring them — you re-run the one-time host setup there (SSH key §2,
+bring them simply re-run the one-time host setup there (SSH key §2,
 `ghostty.terminfo` §3, `cp .env.example .env` §4). That separation is the trade
 for keeping git clean.
 
-For a repo you'll sync across machines:
 
-- **Prefer a private repo.** It costs nothing, syncs identically, and removes the
-  whole "oops, committed a secret" risk class. Nothing here needs to be public
-  unless you want to share it.
-- **If public,** the `.gitignore` is load-bearing — keep it intact, glance at
-  `git status` before committing, and leave GitHub's push protection / secret
-  scanning enabled (free on public repos; blocks many known secret patterns).
-  Keep real identifiers (tenant/subscription IDs, resource endpoints, your email)
-  in `.env` only, not in committed files. If a credential ever reaches history,
-  **rotate it immediately** — deleting it later doesn't help once it's been
-  public.
 
 ---
 

@@ -53,12 +53,18 @@ ENV UV_TOOL_DIR=/opt/uv-tools \
 # `python` — which only resolves if the script lives inside the venv's bin/.
 # Installing to /usr/local/bin breaks that, so replace it with a wrapper that
 # invokes the tool venv's interpreter explicitly.
-# `--with 'setuptools<82'` is required: the `azure` namespace package imports
-# pkg_resources, which was REMOVED in setuptools 82.0.0. uv also builds venvs
-# with no seed packages (and Python 3.12 no longer bundles setuptools), so it is
-# absent unless requested. The upper pin is the load-bearing part — plain
-# `setuptools` resolves to >=82 and still fails with ModuleNotFoundError.
-RUN uv tool install --python 3.12 --with 'setuptools<82' azure-cli \
+#
+# The --prerelease flag is load-bearing: azure-cli pins several dependencies to
+# preview builds (azure-batch==15.0.0b1 and various azure-mgmt-* betas), and uv
+# excludes pre-releases by default where pip would accept an explicit `==x.y.zbN`
+# pin. Without it, no modern release is satisfiable and the resolver silently
+# backtracks to azure-cli 2.0.67 (2019) — which installs cleanly, then dies on
+# `time.clock()`, removed in Python 3.8.
+#
+# The >= floor is the tripwire: it keeps you on current releases while turning
+# any future unsatisfiable resolution into a loud error rather than another
+# silent walk back through eight years of releases.
+RUN uv tool install --python 3.12 --prerelease=allow 'azure-cli>=2.90' \
  && printf '%s\n' \
       '#!/bin/sh' \
       'exec /opt/uv-tools/azure-cli/bin/python -m azure.cli "$@"' \
