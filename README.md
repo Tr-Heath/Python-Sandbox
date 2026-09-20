@@ -299,5 +299,11 @@ for keeping git clean.
   the `az-config` volume is fresh you need to `az login` again.
 - **`docker compose exec` says not running** → start with `up -d` (mode B).
 - **containerd runtime** → use `nerdctl` / `nerdctl compose`.
+- **`az: line 13: python: command not found`** → uv excluded pre-releases by
+  default and silently resolved `azure-cli` back to 2.0.67 (2019); the ancient
+  setuptools script it generated invokes bare `python` rather than the venv
+  interpreter. Fixed in the Dockerfile with `--prerelease=allow 'azure-cli>=2.90'`
+  and a replacement shim that calls the tool venv's Python directly. If you see
+  this, rebuild the image.
 - **Ad-hoc `sudo apt install` gone after rebuild** → expected; add lasting
   packages to the Dockerfile's apt line.

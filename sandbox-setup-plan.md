@@ -92,7 +92,7 @@ inflate the build context and risk polluting the image layer cache.
 
 ### Sub-Task 3 — Build and smoke-test the Docker image
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 Prove the `Dockerfile` and `compose.yaml` are correct by building the image and
@@ -115,7 +115,7 @@ verifying every baked-in tool responds correctly inside the container.
    README §3); skip if not.
 2. Clone TPM on the host so the bind-mounted tmux config has it available:
    `git clone https://github.com/tmux-plugins/tpm dotfiles/tmux/plugins/tpm`.
-   (`dotfiles/tmux/plugins/` is gitignored — this only needs doing once per machine.)
+   (`dotfiles/tmux/plugins/` is gitignored; this only needs doing once per machine.)
 3. Run `docker compose build` and confirm it exits 0.
 4. Start the container in persistent mode: `docker compose up -d`.
 5. Exec in: `docker compose exec pydev bash`.
@@ -131,12 +131,16 @@ verifying every baked-in tool responds correctly inside the container.
 
 **Relevant Context**
 - [`Dockerfile`](Dockerfile) — Neovim version is ARG `NVIM_VERSION=0.12.3`;
-  Azure CLI is installed via `uv tool install --python 3.12 azure-cli` (as root,
-  before the `dev` user exists). The `chown -R dev:dev /home/dev` in the user-creation
-  layer reclaims ownership of `/home/dev/.cache/uv`. A subsequent `mkdir -p` block
-  (still as `USER dev`) pre-creates `~/.azure`, `~/.local/share`, `~/.local/state`,
-  and `~/.local/bin` so Docker seeds those named volumes dev-owned rather than
-  creating them root-owned at first mount.
+  Azure CLI is installed via `uv tool install --python 3.12 --prerelease=allow 'azure-cli>=2.90'`
+  (as root, before the `dev` user exists). `--prerelease=allow` is because
+  without it uv silently resolves back to 2.0.67 (2019), whose setuptools-generated
+  shim calls bare `python` and fails with `command not found`. The `>=2.90` floor
+  turns any future bad resolution into a loud build error. The shim is replaced
+  with a wrapper invoking the venv interpreter directly. The `chown -R dev:dev /home/dev`
+  in the user-creation layer reclaims ownership of `/home/dev/.cache/uv`. A subsequent
+  `mkdir -p` block (still as `USER dev`) pre-creates `~/.azure`, `~/.local/share`,
+  `~/.local/state`, and `~/.local/bin` so Docker seeds those named volumes dev-owned
+  rather than creating them root-owned at first mount.
 - [`compose.yaml`](compose.yaml) — build args, volume declarations, `stdin_open`
   and `tty` flags required for persistent tmux server.
 - [`dotfiles/tmux/tmux.conf`](dotfiles/tmux/tmux.conf) — TPM `run` line at the
