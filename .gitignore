@@ -12,7 +12,7 @@ id_*
 ghostty.terminfo
 test-results
 
-# Your course repo is its own git clone; don't nest it here
+# Your sandbox repo is its own git clone; don't nest it here
 work/
 
 # tmux plugin manager clones itself in here at setup
